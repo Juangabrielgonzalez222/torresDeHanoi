@@ -1,0 +1,270 @@
+<!DOCTYPE html><html><head><title>Torres de Hanoi</title><meta http-equiv="content-type" content="text/html; charset=UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui=1"><meta charset="UTF-8"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="description" content=""><link rel="manifest" href="manifest.json"><link rel="icon" type="image/png" href="icon64.png"><link rel="apple-touch-icon" sizes="180x180" href="icon180.png"><link rel="icon" type="image/png" sizes="32x32" href="icon32.png"><link rel="icon" type="image/png" sizes="16x16" href="icon16.png"><style>html,body {
+  margin: 0;
+  padding: 0;
+  background-color: #000;
+  overflow:hidden;
+  font-family: Verdana;
+}
+.noselect {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+#canvaswrapper {
+  text-align: center ;
+}
+</style><style>@font-face { font-family: "BitCell" ; src: url("fonts/BitCell.ttf") format("truetype"); }</style><script>window.fonts = ["BitCell"]</script></head><body class="noselect custom-cursor" oncontextmenu="return false;"><div id="canvaswrapper"></div><script type="text/javascript">var resources = {"images":[{"file":"1.png","version":11,"size":106,"properties":{"frames":1,"fps":5}},{"file":"2.png","version":12,"size":123,"properties":{"frames":1,"fps":5}},{"file":"3.png","version":4,"size":125,"properties":{"frames":1,"fps":5}},{"file":"4.png","version":6,"size":138,"properties":{"frames":1,"fps":5}},{"file":"5.png","version":7,"size":132,"properties":{"frames":1,"fps":5}},{"file":"6.png","version":5,"size":144,"properties":{"frames":1,"fps":5}},{"file":"7.png","version":3,"size":153,"properties":{"frames":1,"fps":5}},{"file":"8.png","version":5,"size":152,"properties":{"frames":1,"fps":5}},{"file":"9.png","version":3,"size":154,"properties":{"frames":1,"fps":5}},{"file":"base.png","version":20,"size":317,"properties":{"frames":1,"fps":5}},{"file":"campo.png","version":18,"size":152,"properties":{"frames":1,"fps":5}},{"file":"error.png","version":14,"size":247,"properties":{"frames":1,"fps":5}},{"file":"icon.png","version":0,"size":0,"properties":{}},{"file":"madera.png","version":25,"size":248,"properties":{"frames":1,"fps":5}}],"assets":[],"maps":{},"sounds":[],"music":[]};
+var graphics = "M1";
+
+</script><script type="text/javascript">var orientation = 'any' ;
+var aspect = 'free' ;
+var ms_libs = [] ;
+window.skip_service_worker = true;
+window.exported_project = true;
+window.ms_use_server = false ;
+</script><script src="runner.js"></script><script src="brython.js"></script><script src="brython_stdlib.js"></script><script src="microengine.js"></script></body><script type="text/python">from browser import window
+import traceback
+import sys
+
+def execute(str,filename):
+  try:
+    code = compile(str,filename,"exec")
+    return exec(code,globals())
+  except BaseException as err:
+    exp = traceback.format_exception(err)
+    sys.stderr.write(exp)
+  except Error as err:
+    exp = traceback.format_exception(err)
+    sys.stderr.write(exp)
+
+window.python = execute
+window.glob = globals()
+window.pythonLoaded()
+</script><script>window.pythonLoaded = function() {
+  window.player = new Player() ;
+  document.body.focus() ;
+}
+window.addEventListener("load",function() {
+  brython() ;
+}) ;
+
+</script><script id="code" type="text/x-microscript">
+
+def checkInput(obj,val):
+  if hasattr(obj,val):
+    return obj.press[val] != 0
+  return 0
+def init():
+  global nDiscos,pila,ingresarTexto,cargarDiscos,parte1,parte2,pilas,maderaY,movimientos,mensajeMovimientos,origen,destino,mensajeOrigen,mensajeDestino,error,espera,gano,mensajeMovimientosMinimos
+  nDiscos=3
+  maderaY=-8
+  movimientos=0
+  error=None
+  mensajeMovimientos='Movimientos: 0'
+  pilas=[]
+  ingresarTexto=True
+  parte1=True
+  parte2=False
+  cargarDiscos=False
+  mensajeOrigen='Origen:'
+  mensajeDestino='Destino:'
+  mensajeMovimientosMinimos='Movimientos mínimos: '
+  origen=None
+  destino=None
+  espera=0
+  gano=False
+  for i in range(3):
+    pilas.append(PilaEncadenada())
+def update():
+  global nDiscos,ingresarTexto,parte1,parte2,origen,destino,mensajeMovimientos,mensajeOrigen,mensajeDestino,error,espera,movimientos,gano,mensajeMovimientosMinimos
+  if touch.release or checkInput(keyboard,"ENTER"):
+    if parte1:
+      if nDiscos>1 and nDiscos<10:
+        ingresarTexto=False
+        for i in range(nDiscos-1,-1,-1):
+          pilas[0].insertar(i)
+        parte1=False
+        parte2=True
+    elif parte2:
+      if touch.y>-80 and touch.y<63:
+        pila=None
+        if touch.x>-140 and touch.x<-70:
+          pila=1
+        if touch.x>-30 and touch.x<30:
+          pila=2
+        if touch.x>68 and touch.x<130:
+          pila=3
+        if not error:
+          if origen==None:
+            origen=pila
+            mensajeOrigen='Origen: '+str(origen)
+          else:
+            destino=pila
+            mensajeDestino='Destino: '+str(destino)
+            #comprobar movimiento
+            if destino:
+              if origen!=destino:
+                origen-=1
+                destino-=1
+                if not pilas[origen].vacia() and (pilas[destino].vacia() or pilas[origen].getValorTope() < pilas[destino].getValorTope()) :
+                  aux=pilas[origen].suprimir()
+                  pilas[destino].insertar(aux)
+                  movimientos+=1
+                  mensajeMovimientos='Movimientos: '+str(movimientos)
+                  #comprobarVictoria
+                  if pilas[2].getCantidad()==nDiscos:
+                    gano=True
+                    mensajeMovimientosMinimos+=str(2**nDiscos-1)
+                    parte2=False
+                else:
+                  error='error'
+            origen=None
+            destino=None
+            mensajeOrigen='Origen:'
+            mensajeDestino='Destino:'
+    elif gano:
+      gano=False
+      nDiscos=3
+      movimientos=0
+      mensajeMovimientos='Movimientos: 0'
+      ingresarTexto=True
+      parte1=True
+      cargarDiscos=False
+      mensajeOrigen='Origen:'
+      mensajeDestino='Destino:'
+      mensajeMovimientosMinimos='Movimientos mínimos: '
+      for pila in pilas:
+        pila.vaciar()
+  if error:
+    if espera>100:
+      error=None
+      espera=0
+    else:
+      espera+=1
+  #inputs teclado
+  if ingresarTexto:
+    if checkInput(keyboard,"0"):
+      nDiscos=int(str(nDiscos)+'0')
+    if checkInput(keyboard,"1"):
+      nDiscos=int(str(nDiscos)+'1')
+    if checkInput(keyboard,"2"):
+      nDiscos=int(str(nDiscos)+'2')
+    if checkInput(keyboard,"3"):
+      nDiscos=int(str(nDiscos)+'3')
+    if checkInput(keyboard,"4"):
+      nDiscos=int(str(nDiscos)+'4')
+    if checkInput(keyboard,"5"):
+      nDiscos=int(str(nDiscos)+'5')
+    if checkInput(keyboard,"6"):
+      nDiscos=int(str(nDiscos)+'6')
+    if checkInput(keyboard,"7"):
+      nDiscos=int(str(nDiscos)+'7')
+    if checkInput(keyboard,"8"):
+      nDiscos=int(str(nDiscos)+'8')
+    if checkInput(keyboard,"9"):
+      nDiscos=int(str(nDiscos)+'9')
+    if checkInput(keyboard,'BACKSPACE'):
+      nDiscos=str(nDiscos)
+      if len(nDiscos)==1:
+        nDiscos=0
+      else:
+        nDiscos=int(str(nDiscos)[:-1])
+def draw():
+  screen.clear()
+  if gano:
+    screen.fillRect(0,0,screen.width,screen.height,"rgb(153,197,197)")
+    screen.drawText('Has completado el juego',0,70,30,'#000')
+    screen.drawText(mensajeMovimientos,0,30,25)
+    screen.drawText(mensajeMovimientosMinimos,0,0,25)
+    screen.drawText('Clic para comenzar una nueva partida',0,-50,20)
+  else:
+    if parte1:
+      screen.drawText("Ingrese la cantidad de discos, 2-9",0,30,15, "#FFF")
+      screen.drawText("Clic para comenzar",0,-30,15, "#FFF")
+      screen.drawSprite('campo',0,0)
+      screen.drawText(str(nDiscos),0,0,15)
+    if parte2:
+      screen.fillRect(0,0,screen.width,screen.height,"rgb(153,197,197)")
+      screen.drawSprite('madera',-100,maderaY)
+      screen.drawSprite('madera',-0,maderaY)
+      screen.drawSprite('madera',100,maderaY)
+      screen.drawSprite('base',0,-90)
+      screen.drawText(mensajeMovimientos,-screen.width/2+screen.textWidth(mensajeMovimientos, 20 )/2+12,86,20,'#000')
+      screen.drawText(mensajeOrigen,screen.width/2-screen.textWidth(mensajeOrigen, 20 )/2-16,86,20,'#000')
+      screen.drawText(mensajeDestino,screen.width/2 - screen.textWidth(mensajeOrigen, 20 )/2-18 ,62,20,'#000')
+      #for pila in pilas:pila.dibujar()
+      pilas[0].dibujar()
+      pilas[1].dibujar(0)
+      pilas[2].dibujar(100)
+    if error:
+      screen.drawSprite(error,0,0)
+      screen.drawText('Invalido',0,-20,20)
+
+class Nodo:
+    __item=None
+    __siguiente=None
+    def __init__(self):
+        self.__item=None
+        self.__siguiente=None
+    def obtenerItem(self):
+        return self.__item
+    def obtenerSiguiente(self):
+        return self.__siguiente
+    def cargarItem(self,x):
+        self.__item=x
+    def cargarSiguiente(self,siguiente):
+        self.__siguiente=siguiente
+
+class PilaEncadenada:
+    __tope=None
+    __cantidad=0
+    def __init__(self):
+        self.__tope=None
+        self.__cantidad=0
+    def vacia(self):
+        return self.__cantidad==0
+    def getValorTope(self):
+      return self.__tope.obtenerItem()
+    def getCantidad(self):
+      return self.__cantidad
+    def insertar(self,x):
+        nodo=Nodo()
+        nodo.cargarItem(x)
+        nodo.cargarSiguiente(self.__tope)
+        self.__tope=nodo
+        self.__cantidad+=1
+        return nodo
+    def suprimir(self):
+        x=None
+        if self.vacia():
+            print('Pila vacia.')
+        else:
+            x=self.__tope.obtenerItem()
+            self.__tope=self.__tope.obtenerSiguiente()
+            self.__cantidad-=1
+        return x
+    def mostrar(self):
+        if self.vacia():
+            print('Pila Vacia')
+        else:
+            aux=self.__tope
+            while aux!=None:
+                print(aux.obtenerItem())
+                aux=aux.obtenerSiguiente()
+    def dibujar(self,x=-100,y=-72):
+      if not self.vacia():
+        aux=self.__tope
+        y+=(self.__cantidad-1)*16
+        while aux!=None:
+          screen.drawSprite(str(aux.obtenerItem()+1),x,y)
+          y-=16
+          aux=aux.obtenerSiguiente()
+    def vaciar(self):
+      while self.__cantidad>0:
+        self.suprimir()
+        
+
+</script></html>
